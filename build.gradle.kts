@@ -14,14 +14,22 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+    // kotest setting
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
+    testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.0")
 }
 
 tasks.test {
-    useJUnit()
+    useJUnitPlatform()
 }
 
 tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "11"
+}
+
+// kotest setting
+tasks.withType<Test>() {
+    useJUnitPlatform()
 }
 
 application {
