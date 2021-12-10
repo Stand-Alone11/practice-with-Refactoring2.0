@@ -21,6 +21,12 @@ class InvoiceMaker {
             val play = plays[perf.playId]
             var thisAmount = 0
 
+            /**
+             * when문 함수 추출 하기
+             * perf, play, thiaAmount 변수들은 추출된 함수에서 사용 불가
+             * perf, play는 사용하지만 값이 변하지 않아 매개변수로 전달
+             * thisAmount는 함수 내부에서 변경, 이런 변수는 신중하게 다뤄야함
+             */
             when(play!!.type) {
                 "tragedy" -> {
                     thisAmount = 40000;
