@@ -7,27 +7,11 @@ import kotlin.math.floor
 
 class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
-        var totalAmount = 0;
-        var volumeCredits = 0;
-        var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
 
-        val format = NumberFormat.getCurrencyInstance().apply {
-            maximumFractionDigits = 2
-            minimumFractionDigits = 2
-            currency = Currency.getInstance(Locale.US)
-        }
-
-        for(perf in invoice["performances"] as List<Performance>) {
-            val play = plays[perf.playId]
-            var thisAmount = 0
-
-            /**
-             * when문 함수 추출 하기
-             * perf, play, thiaAmount 변수들은 추출된 함수에서 사용 불가
-             * perf, play는 사용하지만 값이 변하지 않아 매개변수로 전달
-             * thisAmount는 함수 내부에서 변경, 이런 변수는 신중하게 다뤄야함
-             */
-            when(play!!.type) {
+        // when문 내부함수 추출
+        fun amountFor(perf: Performance, play: Play): Int { // 매개변수 전달
+            var thisAmount = 0 // 변수 초기화
+            when(play.type) {
                 "tragedy" -> {
                     thisAmount = 40000;
                     if(perf.audience > 30) {
@@ -43,6 +27,23 @@ class InvoiceMaker {
                 }
                 else -> throw Exception("알 수 없는 장르: ${play.type}")
             }
+            return thisAmount // 값이 바뀌는 변수 리턴
+        }
+
+        var totalAmount = 0;
+        var volumeCredits = 0;
+        var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
+
+        val format = NumberFormat.getCurrencyInstance().apply {
+            maximumFractionDigits = 2
+            minimumFractionDigits = 2
+            currency = Currency.getInstance(Locale.US)
+        }
+
+        for(perf in invoice["performances"] as List<Performance>) {
+            val play = plays[perf.playId]
+            var thisAmount = amountFor(perf, play!!)
+
             // add point
             volumeCredits += Math.max(perf.audience - 30 , 0)
             // add 5points per an audience of Comedy
