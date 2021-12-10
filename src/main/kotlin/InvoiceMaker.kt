@@ -9,7 +9,7 @@ class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
         var totalAmount = 0;
         var volumeCredits = 0;
-        var result = "청구 내역 (고객명: ${invoice["customer"]}\n"
+        var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
 
         val format = NumberFormat.getCurrencyInstance().apply {
             maximumFractionDigits = 2
