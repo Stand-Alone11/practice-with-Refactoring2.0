@@ -16,9 +16,9 @@ class InvoiceMaker {
             return plays[aPerformance.playId]!!
         }
 
-        fun amountFor(aPerformance: Performance, play: Play): Int {
+        fun amountFor(aPerformance: Performance): Int {
             var result = 0 // 명확한 이름으로 변경
-            when(play.type) {
+            when(playFor(aPerformance).type) { // playFor() 함수 인라인
                 "tragedy" -> {
                     result = 40000;
                     if(aPerformance.audience > 30) {
@@ -32,7 +32,7 @@ class InvoiceMaker {
                     }
                     result += 300 * aPerformance.audience
                 }
-                else -> throw Exception("알 수 없는 장르: ${play.type}")
+                else -> throw Exception("알 수 없는 장르: ${playFor(aPerformance).type}")
             }
             return result
         }
@@ -48,16 +48,16 @@ class InvoiceMaker {
         }
 
         for(perf in invoice["performances"] as List<Performance>) {
-            val play = playFor(perf) // 질의 함수 사용
-            var thisAmount = amountFor(perf, play)
+            //val play = playFor(perf)    playFor()함수 인라인으로 삭제
+            var thisAmount = amountFor(perf)// playFor() 함수 인라인
 
             // add point
             volumeCredits += Math.max(perf.audience - 30 , 0)
             // add 5points per an audience of Comedy
-            if("comedy" == play.type) volumeCredits += floor((perf.audience / 5).toDouble()).toInt()
+            if("comedy" == playFor(perf).type) volumeCredits += floor((perf.audience / 5).toDouble()).toInt() // playFor() 함수 인라인
 
             // print invoices
-            result += " ${play.name}: ${format.format(thisAmount.toDouble() / 100)} (${perf.audience}석)\n"
+            result += " ${playFor(perf).name}: ${format.format(thisAmount.toDouble() / 100)} (${perf.audience}석)\n" // playFor() 함수 인라인
             totalAmount += thisAmount
         }
         result += "총액: ${format.format(totalAmount.toDouble() / 100)}\n"
