@@ -8,26 +8,26 @@ import kotlin.math.floor
 class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
 
-        // when문 내부함수 추출
-        fun amountFor(perf: Performance, play: Play): Int { // 매개변수 전달
-            var thisAmount = 0 // 변수 초기화
+        // 변수 리네임
+        fun amountFor(aPerformance: Performance, play: Play): Int {
+            var result = 0 // 명확한 이름으로 변경
             when(play.type) {
                 "tragedy" -> {
-                    thisAmount = 40000;
-                    if(perf.audience > 30) {
-                        thisAmount += 1000 * (perf.audience - 30)
+                    result = 40000;
+                    if(aPerformance.audience > 30) {
+                        result += 1000 * (aPerformance.audience - 30)
                     }
                 }
                 "comedy" -> {
-                    thisAmount = 30000
-                    if(perf.audience > 20) {
-                        thisAmount += 10000 + 500 * (perf.audience - 20)
+                    result = 30000
+                    if(aPerformance.audience > 20) {
+                        result += 10000 + 500 * (aPerformance.audience - 20)
                     }
-                    thisAmount += 300 * perf.audience
+                    result += 300 * aPerformance.audience
                 }
                 else -> throw Exception("알 수 없는 장르: ${play.type}")
             }
-            return thisAmount // 값이 바뀌는 변수 리턴
+            return result
         }
 
         var totalAmount = 0;
