@@ -7,8 +7,15 @@ import kotlin.math.floor
 
 class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
+        /**
+         * 임시 변수를 질의 함수로 바꾸기
+         * play는 aPerformance 변수로 구할 수 있으므로 매개변수로 전달할 필요 없음
+         * play -> playFor(aPerformance)
+         */
+        fun playFor(aPerformance: Performance): Play {
+            return plays[aPerformance.playId]!!
+        }
 
-        // 변수 리네임
         fun amountFor(aPerformance: Performance, play: Play): Int {
             var result = 0 // 명확한 이름으로 변경
             when(play.type) {
@@ -41,8 +48,8 @@ class InvoiceMaker {
         }
 
         for(perf in invoice["performances"] as List<Performance>) {
-            val play = plays[perf.playId]
-            var thisAmount = amountFor(perf, play!!)
+            val play = playFor(perf) // 질의 함수 사용
+            var thisAmount = amountFor(perf, play)
 
             // add point
             volumeCredits += Math.max(perf.audience - 30 , 0)
