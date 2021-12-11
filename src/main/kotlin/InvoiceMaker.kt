@@ -7,11 +7,6 @@ import kotlin.math.floor
 
 class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
-        /**
-         * 임시 변수를 질의 함수로 바꾸기
-         * play는 aPerformance 변수로 구할 수 있으므로 매개변수로 전달할 필요 없음
-         * play -> playFor(aPerformance)
-         */
         fun playFor(aPerformance: Performance): Play {
             return plays[aPerformance.playId]!!
         }
@@ -37,8 +32,8 @@ class InvoiceMaker {
             return result
         }
 
-        var totalAmount = 0;
-        var volumeCredits = 0;
+        var totalAmount = 0
+        var volumeCredits = 0
         var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
 
         val format = NumberFormat.getCurrencyInstance().apply {
@@ -47,18 +42,17 @@ class InvoiceMaker {
             currency = Currency.getInstance(Locale.US)
         }
 
+        // amountFor()로 구한 thisAmount는 이후에 값이 바뀌지 않으므로 thisAmount를 사용하는 부분에 amountFor() 인라인
         for(perf in invoice["performances"] as List<Performance>) {
             //val play = playFor(perf)    playFor()함수 인라인으로 삭제
-            var thisAmount = amountFor(perf)// playFor() 함수 인라인
-
             // add point
             volumeCredits += Math.max(perf.audience - 30 , 0)
             // add 5points per an audience of Comedy
             if("comedy" == playFor(perf).type) volumeCredits += floor((perf.audience / 5).toDouble()).toInt() // playFor() 함수 인라인
 
             // print invoices
-            result += " ${playFor(perf).name}: ${format.format(thisAmount.toDouble() / 100)} (${perf.audience}석)\n" // playFor() 함수 인라인
-            totalAmount += thisAmount
+            result += " ${playFor(perf).name}: ${format.format(amountFor(perf).toDouble() / 100)} (${perf.audience}석)\n" // playFor(), amountFor() 함수 인라인
+            totalAmount += amountFor(perf) // amountFor() 함수 인라인
         }
         result += "총액: ${format.format(totalAmount.toDouble() / 100)}\n"
         result += "적립 포인트: ${volumeCredits}점\n"
