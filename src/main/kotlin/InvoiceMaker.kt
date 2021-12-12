@@ -48,7 +48,6 @@ class InvoiceMaker {
         }
 
         var totalAmount = 0
-        var volumeCredits = 0
         var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
 
         for(perf in invoice["performances"] as List<Performance>) {
@@ -57,7 +56,7 @@ class InvoiceMaker {
             totalAmount += amountFor(perf)
         }
 
-        //volumeCredits 변수를 없애기 위해 volumeCredits를 구하는 로직인 반복문을 나눔
+        var volumeCredits = 0 // 문장 슬라이드를 적용하여 변수 선언, 초기화를 반복문 앞으로 이동
         for(perf in invoice["performances"] as List<Performance>) {
             volumeCredits += volumeCreditsFor(perf)
         }
