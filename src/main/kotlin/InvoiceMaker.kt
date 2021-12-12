@@ -56,7 +56,7 @@ class InvoiceMaker {
         }
 
         // totalAmount라는 변수가 이미 있으므로 임시 함수 네이밍
-        fun tempFun(): Int {
+        fun totalAmount(): Int {
             var totalAmount = 0
             for(perf in invoice["performances"] as List<Performance>) {
                 totalAmount += amountFor(perf)
@@ -71,9 +71,7 @@ class InvoiceMaker {
             result += " ${playFor(perf).name}: ${usd(amountFor(perf).toDouble())} (${perf.audience}석)\n"
         }
 
-        var totalAmount = tempFun()
-
-        result += "총액: ${usd(totalAmount.toDouble())}\n"
+        result += "총액: ${usd(totalAmount().toDouble())}\n"
         result += "적립 포인트: ${totalVolumeCredits()}점\n"
         return result
     }
