@@ -47,22 +47,26 @@ class InvoiceMaker {
             }.format(aNumber / 100)
         }
 
+        // 슬라이드한 변수와 쪼갠 반복문을 묶어 함수로 추출
+        fun totalVolumeCredits(): Int {
+            var volumeCredits = 0
+            for(perf in invoice["performances"] as List<Performance>) {
+                volumeCredits += volumeCreditsFor(perf)
+            }
+            return volumeCredits
+        }
+
         var totalAmount = 0
         var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
 
         for(perf in invoice["performances"] as List<Performance>) {
             // print invoices
-            result += " ${playFor(perf).name}: ${usd(amountFor(perf).toDouble())} (${perf.audience}석)\n" // playFor(), amountFor() 함수 인라인
+            result += " ${playFor(perf).name}: ${usd(amountFor(perf).toDouble())} (${perf.audience}석)\n"
             totalAmount += amountFor(perf)
         }
 
-        var volumeCredits = 0 // 문장 슬라이드를 적용하여 변수 선언, 초기화를 반복문 앞으로 이동
-        for(perf in invoice["performances"] as List<Performance>) {
-            volumeCredits += volumeCreditsFor(perf)
-        }
-
         result += "총액: ${usd(totalAmount.toDouble())}\n"
-        result += "적립 포인트: ${volumeCredits}점\n"
+        result += "적립 포인트: ${totalVolumeCredits()}점\n" //추출한 함수 인라인
         return result
     }
 }
