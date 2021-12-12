@@ -32,12 +32,11 @@ class InvoiceMaker {
             return result
         }
 
-        fun volumeCreditsFor(perf: Performance): Int {
-            var volumeCredits = 0
-            volumeCredits += Math.max(perf.audience - 30 , 0)
-            // add 5points per an audience of Comedy
-            if("comedy" == playFor(perf).type) volumeCredits += floor((perf.audience / 5).toDouble()).toInt() // playFor() 함수 인라인
-            return volumeCredits
+        fun volumeCreditsFor(aPerformance: Performance): Int {
+            var result = 0
+            result += Math.max(aPerformance.audience - 30 , 0)
+            if("comedy" == playFor(aPerformance).type) result += floor((aPerformance.audience / 5).toDouble()).toInt()
+            return result
         }
 
         var totalAmount = 0
