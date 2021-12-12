@@ -48,22 +48,20 @@ class InvoiceMaker {
         }
 
         fun totalVolumeCredits(): Int {
-            var volumeCredits = 0
+            var result = 0
             for(perf in invoice["performances"] as List<Performance>) {
-                volumeCredits += volumeCreditsFor(perf)
+                result += volumeCreditsFor(perf)
             }
-            return volumeCredits
+            return result
         }
 
-        // totalAmount라는 변수가 이미 있으므로 임시 함수 네이밍
         fun totalAmount(): Int {
-            var totalAmount = 0
+            var result = 0
             for(perf in invoice["performances"] as List<Performance>) {
-                totalAmount += amountFor(perf)
+                result += amountFor(perf)
             }
-            return totalAmount
+            return result
         }
-
 
         var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
         for(perf in invoice["performances"] as List<Performance>) {
