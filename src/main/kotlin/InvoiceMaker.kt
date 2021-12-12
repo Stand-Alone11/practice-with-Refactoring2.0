@@ -39,25 +39,27 @@ class InvoiceMaker {
             return result
         }
 
+        //format 변수를 usd함수로 추출
+        fun usd(aNumber: Double): String {
+            return NumberFormat.getCurrencyInstance().apply {
+                maximumFractionDigits = 2
+                minimumFractionDigits = 2
+                currency = Currency.getInstance(Locale.US)
+            }.format(aNumber / 100) // 단위로직도 포함
+        }
+
         var totalAmount = 0
         var volumeCredits = 0
         var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
 
-        val format = NumberFormat.getCurrencyInstance().apply {
-            maximumFractionDigits = 2
-            minimumFractionDigits = 2
-            currency = Currency.getInstance(Locale.US)
-        }
-
-        //volumeCredits를 누적합하는 코드를 함수로 추출
         for(perf in invoice["performances"] as List<Performance>) {
-            volumeCredits += volumeCreditsFor(perf) // 추출한 함수를 이용해 값을 누적
+            volumeCredits += volumeCreditsFor(perf)
 
             // print invoices
-            result += " ${playFor(perf).name}: ${format.format(amountFor(perf).toDouble() / 100)} (${perf.audience}석)\n" // playFor(), amountFor() 함수 인라인
-            totalAmount += amountFor(perf) // amountFor() 함수 인라인
+            result += " ${playFor(perf).name}: ${usd(amountFor(perf).toDouble())} (${perf.audience}석)\n" // playFor(), amountFor() 함수 인라인
+            totalAmount += amountFor(perf)
         }
-        result += "총액: ${format.format(totalAmount.toDouble() / 100)}\n"
+        result += "총액: ${usd(totalAmount.toDouble())}\n"
         result += "적립 포인트: ${volumeCredits}점\n"
         return result
     }
