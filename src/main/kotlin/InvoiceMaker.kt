@@ -39,13 +39,12 @@ class InvoiceMaker {
             return result
         }
 
-        //format 변수를 usd함수로 추출
         fun usd(aNumber: Double): String {
             return NumberFormat.getCurrencyInstance().apply {
                 maximumFractionDigits = 2
                 minimumFractionDigits = 2
                 currency = Currency.getInstance(Locale.US)
-            }.format(aNumber / 100) // 단위로직도 포함
+            }.format(aNumber / 100)
         }
 
         var totalAmount = 0
@@ -53,12 +52,16 @@ class InvoiceMaker {
         var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
 
         for(perf in invoice["performances"] as List<Performance>) {
-            volumeCredits += volumeCreditsFor(perf)
-
             // print invoices
             result += " ${playFor(perf).name}: ${usd(amountFor(perf).toDouble())} (${perf.audience}석)\n" // playFor(), amountFor() 함수 인라인
             totalAmount += amountFor(perf)
         }
+
+        //volumeCredits 변수를 없애기 위해 volumeCredits를 구하는 로직인 반복문을 나눔
+        for(perf in invoice["performances"] as List<Performance>) {
+            volumeCredits += volumeCreditsFor(perf)
+        }
+
         result += "총액: ${usd(totalAmount.toDouble())}\n"
         result += "적립 포인트: ${volumeCredits}점\n"
         return result
