@@ -32,6 +32,14 @@ class InvoiceMaker {
             return result
         }
 
+        fun volumeCreditsFor(perf: Performance): Int {
+            var volumeCredits = 0
+            volumeCredits += Math.max(perf.audience - 30 , 0)
+            // add 5points per an audience of Comedy
+            if("comedy" == playFor(perf).type) volumeCredits += floor((perf.audience / 5).toDouble()).toInt() // playFor() 함수 인라인
+            return volumeCredits
+        }
+
         var totalAmount = 0
         var volumeCredits = 0
         var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
@@ -42,13 +50,9 @@ class InvoiceMaker {
             currency = Currency.getInstance(Locale.US)
         }
 
-        // amountFor()로 구한 thisAmount는 이후에 값이 바뀌지 않으므로 thisAmount를 사용하는 부분에 amountFor() 인라인
+        //volumeCredits를 누적합하는 코드를 함수로 추출
         for(perf in invoice["performances"] as List<Performance>) {
-            //val play = playFor(perf)    playFor()함수 인라인으로 삭제
-            // add point
-            volumeCredits += Math.max(perf.audience - 30 , 0)
-            // add 5points per an audience of Comedy
-            if("comedy" == playFor(perf).type) volumeCredits += floor((perf.audience / 5).toDouble()).toInt() // playFor() 함수 인라인
+            volumeCredits += volumeCreditsFor(perf) // 추출한 함수를 이용해 값을 누적
 
             // print invoices
             result += " ${playFor(perf).name}: ${format.format(amountFor(perf).toDouble() / 100)} (${perf.audience}석)\n" // playFor(), amountFor() 함수 인라인
