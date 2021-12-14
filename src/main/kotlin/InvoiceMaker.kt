@@ -7,14 +7,25 @@ import kotlin.math.floor
 
 class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
-        return renderPlainText(invoice, plays)
+        /**
+         * 문제발생
+         * 자바스크립트는 객체 생성 후 프로퍼티 할당이 가능하지만 코틀린은 불가능하다
+         * 따라서 statementData를 임시 class로 만들어 진행한 뒤, 마지막에 data class로 변환할 예정
+         */
+
+        val statementData = StatementData()
+        statementData.customer = invoice["customer"] as String
+        statementData.performances = invoice["performances"] as List<Performance>
+        return renderPlainText(statementData, plays)
     }
 
-    /**
-     * 데이터 생성과 렌더링 작업 분리하기
-     * statement의 본문을 result를 반환하는 함수로 추출한다
-     */
-    fun renderPlainText(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
+    class StatementData() {
+        lateinit var customer: String
+        lateinit var performances: List<Performance>
+    }
+
+    // invoice 매개변수를 없애기 위해 invoice의 정보를 statementData로 이동시키기
+    fun renderPlainText(statementData: StatementData, plays: HashMap<String, Play>): String {  // invoice 삭제
         fun playFor(aPerformance: Performance): Play {
             return plays[aPerformance.playId]!!
         }
@@ -57,7 +68,7 @@ class InvoiceMaker {
 
         fun totalVolumeCredits(): Int {
             var result = 0
-            for(perf in invoice["performances"] as List<Performance>) {
+            for(perf in statementData.performances) { // invoice -> statementData
                 result += volumeCreditsFor(perf)
             }
             return result
@@ -65,14 +76,14 @@ class InvoiceMaker {
 
         fun totalAmount(): Int {
             var result = 0
-            for(perf in invoice["performances"] as List<Performance>) {
+            for(perf in statementData.performances) {  // invoice -> statementData
                 result += amountFor(perf)
             }
             return result
         }
 
-        var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
-        for(perf in invoice["performances"] as List<Performance>) {
+        var result = "청구 내역 (고객명: ${statementData.customer})\n"
+        for(perf in statementData.performances) {  // invoice -> statementData
             // print invoices
             result += " ${playFor(perf).name}: ${usd(amountFor(perf).toDouble())} (${perf.audience}석)\n"
         }
