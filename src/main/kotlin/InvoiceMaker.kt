@@ -59,7 +59,7 @@ class InvoiceMaker {
         fun volumeCreditsFor(aPerformance: Performance): Int {
             var result = 0
             result += Math.max(aPerformance.audience - 30 , 0)
-            if("comedy" == aPerformance.play.type) result += floor((aPerformance.audience / 5).toDouble()).toInt() // playFor() -> aPerformance
+            if("comedy" == aPerformance.play.type) result += floor((aPerformance.audience / 5).toDouble()).toInt() // playFor() -> aPerformance.play
             return result
         }
 
@@ -90,7 +90,7 @@ class InvoiceMaker {
         var result = "청구 내역 (고객명: ${statementData.customer})\n"
         for(perf in statementData.performances) {
             // print invoices
-            result += " ${perf.play.name}: ${usd(amountFor(perf).toDouble())} (${perf.audience}석)\n" // playFor() -> aPerformance
+            result += " ${perf.play.name}: ${usd(amountFor(perf).toDouble())} (${perf.audience}석)\n" // playFor() -> aPerformance.play
         }
 
         result += "총액: ${usd(totalAmount().toDouble())}\n"
