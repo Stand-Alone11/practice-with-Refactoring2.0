@@ -7,17 +7,36 @@ import kotlin.math.floor
 
 class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
-        // playFor 위치이동
         fun playFor(aPerformance: Performance): Play {
             return plays[aPerformance.playId]!!
         }
-        /**
-         * 문제 발생
-         * 프로퍼티 동적 생성 불가, performance class 수정
-         */
+
+        // 위치 이동
+        fun amountFor(aPerformance: Performance): Int {
+            var result = 0
+            when(aPerformance.play.type) {
+                "tragedy" -> {
+                    result = 40000;
+                    if(aPerformance.audience > 30) {
+                        result += 1000 * (aPerformance.audience - 30)
+                    }
+                }
+                "comedy" -> {
+                    result = 30000
+                    if(aPerformance.audience > 20) {
+                        result += 10000 + 500 * (aPerformance.audience - 20)
+                    }
+                    result += 300 * aPerformance.audience
+                }
+                else -> throw Exception("알 수 없는 장르: ${aPerformance.play.type}")
+            }
+            return result
+        }
+
         fun enrichPerformance(aPerformance: Performance): Performance {
             val result = aPerformance.copy()
-            result.play = playFor(aPerformance)
+            result.play = playFor(result) // aPerformance -> result
+            result.amount = amountFor(result) // bug fix: play가 할당된 result를 넘겨줘야 함 aPerformance -> result
             return result
         }
 
@@ -35,31 +54,10 @@ class InvoiceMaker {
 
     fun renderPlainText(statementData: StatementData, plays: HashMap<String, Play>): String {
 
-        fun amountFor(aPerformance: Performance): Int {
-            var result = 0
-            when(aPerformance.play.type) { // playFor() -> aPerformance.play
-                "tragedy" -> {
-                    result = 40000;
-                    if(aPerformance.audience > 30) {
-                        result += 1000 * (aPerformance.audience - 30)
-                    }
-                }
-                "comedy" -> {
-                    result = 30000
-                    if(aPerformance.audience > 20) {
-                        result += 10000 + 500 * (aPerformance.audience - 20)
-                    }
-                    result += 300 * aPerformance.audience
-                }
-                else -> throw Exception("알 수 없는 장르: ${aPerformance.play.type}") // playFor() -> aPerformance.play
-            }
-            return result
-        }
-
         fun volumeCreditsFor(aPerformance: Performance): Int {
             var result = 0
             result += Math.max(aPerformance.audience - 30 , 0)
-            if("comedy" == aPerformance.play.type) result += floor((aPerformance.audience / 5).toDouble()).toInt() // playFor() -> aPerformance.play
+            if("comedy" == aPerformance.play.type) result += floor((aPerformance.audience / 5).toDouble()).toInt()
             return result
         }
 
@@ -82,7 +80,7 @@ class InvoiceMaker {
         fun totalAmount(): Int {
             var result = 0
             for(perf in statementData.performances) {
-                result += amountFor(perf)
+                result += perf.amount // amountFor() -> Performance.amount
             }
             return result
         }
@@ -90,7 +88,7 @@ class InvoiceMaker {
         var result = "청구 내역 (고객명: ${statementData.customer})\n"
         for(perf in statementData.performances) {
             // print invoices
-            result += " ${perf.play.name}: ${usd(amountFor(perf).toDouble())} (${perf.audience}석)\n" // playFor() -> aPerformance.play
+            result += " ${perf.play.name}: ${usd(perf.amount.toDouble())} (${perf.audience}석)\n" // amountFor() -> Performance.amount
         }
 
         result += "총액: ${usd(totalAmount().toDouble())}\n"
