@@ -11,7 +11,6 @@ class InvoiceMaker {
             return plays[aPerformance.playId]!!
         }
 
-        // 위치 이동
         fun amountFor(aPerformance: Performance): Int {
             var result = 0
             when(aPerformance.play.type) {
@@ -33,10 +32,19 @@ class InvoiceMaker {
             return result
         }
 
+        //위치 이동
+        fun volumeCreditsFor(aPerformance: Performance): Int {
+            var result = 0
+            result += Math.max(aPerformance.audience - 30 , 0)
+            if("comedy" == aPerformance.play.type) result += floor((aPerformance.audience / 5).toDouble()).toInt()
+            return result
+        }
+
         fun enrichPerformance(aPerformance: Performance): Performance {
             val result = aPerformance.copy()
-            result.play = playFor(result) // aPerformance -> result
-            result.amount = amountFor(result) // bug fix: play가 할당된 result를 넘겨줘야 함 aPerformance -> result
+            result.play = playFor(result)
+            result.amount = amountFor(result)
+            result.volumeCredit = volumeCreditsFor(result)
             return result
         }
 
@@ -53,14 +61,6 @@ class InvoiceMaker {
     }
 
     fun renderPlainText(statementData: StatementData, plays: HashMap<String, Play>): String {
-
-        fun volumeCreditsFor(aPerformance: Performance): Int {
-            var result = 0
-            result += Math.max(aPerformance.audience - 30 , 0)
-            if("comedy" == aPerformance.play.type) result += floor((aPerformance.audience / 5).toDouble()).toInt()
-            return result
-        }
-
         fun usd(aNumber: Double): String {
             return NumberFormat.getCurrencyInstance().apply {
                 maximumFractionDigits = 2
@@ -72,7 +72,7 @@ class InvoiceMaker {
         fun totalVolumeCredits(): Int {
             var result = 0
             for(perf in statementData.performances) {
-                result += volumeCreditsFor(perf)
+                result += perf.volumeCredit
             }
             return result
         }
@@ -80,7 +80,7 @@ class InvoiceMaker {
         fun totalAmount(): Int {
             var result = 0
             for(perf in statementData.performances) {
-                result += perf.amount // amountFor() -> Performance.amount
+                result += perf.amount
             }
             return result
         }
@@ -88,7 +88,7 @@ class InvoiceMaker {
         var result = "청구 내역 (고객명: ${statementData.customer})\n"
         for(perf in statementData.performances) {
             // print invoices
-            result += " ${perf.play.name}: ${usd(perf.amount.toDouble())} (${perf.audience}석)\n" // amountFor() -> Performance.amount
+            result += " ${perf.play.name}: ${usd(perf.amount.toDouble())} (${perf.audience}석)\n"
         }
 
         result += "총액: ${usd(totalAmount().toDouble())}\n"
