@@ -7,15 +7,24 @@ import kotlin.math.floor
 
 class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
+        // playFor 위치이동
+        fun playFor(aPerformance: Performance): Play {
+            return plays[aPerformance.playId]!!
+        }
         /**
-         * 문제발생
-         * 자바스크립트는 객체 생성 후 프로퍼티 할당이 가능하지만 코틀린은 불가능하다
-         * 따라서 statementData를 임시 class로 만들어 진행한 뒤, 마지막에 data class로 변환할 예정
+         * 문제 발생
+         * 프로퍼티 동적 생성 불가, performance class 수정
          */
+        fun enrichPerformance(aPerformance: Performance): Performance {
+            val result = aPerformance.copy()
+            result.play = playFor(aPerformance)
+            return result
+        }
 
         val statementData = StatementData()
         statementData.customer = invoice["customer"] as String
-        statementData.performances = invoice["performances"] as List<Performance>
+        statementData.performances = (invoice["performances"] as List<Performance>).map{ enrichPerformance(it) }
+
         return renderPlainText(statementData, plays)
     }
 
@@ -24,15 +33,11 @@ class InvoiceMaker {
         lateinit var performances: List<Performance>
     }
 
-    // invoice 매개변수를 없애기 위해 invoice의 정보를 statementData로 이동시키기
-    fun renderPlainText(statementData: StatementData, plays: HashMap<String, Play>): String {  // invoice 삭제
-        fun playFor(aPerformance: Performance): Play {
-            return plays[aPerformance.playId]!!
-        }
+    fun renderPlainText(statementData: StatementData, plays: HashMap<String, Play>): String {
 
         fun amountFor(aPerformance: Performance): Int {
-            var result = 0 // 명확한 이름으로 변경
-            when(playFor(aPerformance).type) { // playFor() 함수 인라인
+            var result = 0
+            when(aPerformance.play.type) { // playFor() -> aPerformance.play
                 "tragedy" -> {
                     result = 40000;
                     if(aPerformance.audience > 30) {
@@ -46,7 +51,7 @@ class InvoiceMaker {
                     }
                     result += 300 * aPerformance.audience
                 }
-                else -> throw Exception("알 수 없는 장르: ${playFor(aPerformance).type}")
+                else -> throw Exception("알 수 없는 장르: ${aPerformance.play.type}") // playFor() -> aPerformance.play
             }
             return result
         }
@@ -54,7 +59,7 @@ class InvoiceMaker {
         fun volumeCreditsFor(aPerformance: Performance): Int {
             var result = 0
             result += Math.max(aPerformance.audience - 30 , 0)
-            if("comedy" == playFor(aPerformance).type) result += floor((aPerformance.audience / 5).toDouble()).toInt()
+            if("comedy" == aPerformance.play.type) result += floor((aPerformance.audience / 5).toDouble()).toInt() // playFor() -> aPerformance
             return result
         }
 
@@ -68,7 +73,7 @@ class InvoiceMaker {
 
         fun totalVolumeCredits(): Int {
             var result = 0
-            for(perf in statementData.performances) { // invoice -> statementData
+            for(perf in statementData.performances) {
                 result += volumeCreditsFor(perf)
             }
             return result
@@ -76,16 +81,16 @@ class InvoiceMaker {
 
         fun totalAmount(): Int {
             var result = 0
-            for(perf in statementData.performances) {  // invoice -> statementData
+            for(perf in statementData.performances) {
                 result += amountFor(perf)
             }
             return result
         }
 
         var result = "청구 내역 (고객명: ${statementData.customer})\n"
-        for(perf in statementData.performances) {  // invoice -> statementData
+        for(perf in statementData.performances) {
             // print invoices
-            result += " ${playFor(perf).name}: ${usd(amountFor(perf).toDouble())} (${perf.audience}석)\n"
+            result += " ${perf.play.name}: ${usd(amountFor(perf).toDouble())} (${perf.audience}석)\n" // playFor() -> aPerformance
         }
 
         result += "총액: ${usd(totalAmount().toDouble())}\n"
