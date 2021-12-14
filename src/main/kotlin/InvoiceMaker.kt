@@ -7,6 +7,10 @@ import kotlin.math.floor
 
 class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
+        return renderPlainText(createStatementData(invoice, plays))
+    }
+
+    fun createStatementData(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): StatementData {
         fun playFor(aPerformance: Performance): Play {
             return plays[aPerformance.playId]!!
         }
@@ -60,8 +64,7 @@ class InvoiceMaker {
         statementData.performances = (invoice["performances"] as List<Performance>).map{ enrichPerformance(it) }
         statementData.totalAmount = totalAmount(statementData)
         statementData.totalVolumeCredits = totalVolumeCredits(statementData)
-
-        return renderPlainText(statementData, plays)
+        return statementData
     }
 
     class StatementData() {
@@ -71,7 +74,7 @@ class InvoiceMaker {
         var totalVolumeCredits = -1
     }
 
-    fun renderPlainText(statementData: StatementData, plays: HashMap<String, Play>): String {
+    fun renderPlainText(statementData: StatementData): String {
         fun usd(aNumber: Double): String {
             return NumberFormat.getCurrencyInstance().apply {
                 maximumFractionDigits = 2
