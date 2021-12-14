@@ -32,11 +32,18 @@ class InvoiceMaker {
             return result
         }
 
-        //위치 이동
         fun volumeCreditsFor(aPerformance: Performance): Int {
             var result = 0
             result += Math.max(aPerformance.audience - 30 , 0)
             if("comedy" == aPerformance.play.type) result += floor((aPerformance.audience / 5).toDouble()).toInt()
+            return result
+        }
+
+        fun totalAmount(statementData: StatementData): Int {
+            var result = 0
+            for(perf in statementData.performances) {
+                result += perf.amount
+            }
             return result
         }
 
@@ -51,6 +58,7 @@ class InvoiceMaker {
         val statementData = StatementData()
         statementData.customer = invoice["customer"] as String
         statementData.performances = (invoice["performances"] as List<Performance>).map{ enrichPerformance(it) }
+        statementData.totalAmount = totalAmount(statementData)
 
         return renderPlainText(statementData, plays)
     }
@@ -58,6 +66,7 @@ class InvoiceMaker {
     class StatementData() {
         lateinit var customer: String
         lateinit var performances: List<Performance>
+        var totalAmount = -1
     }
 
     fun renderPlainText(statementData: StatementData, plays: HashMap<String, Play>): String {
@@ -77,21 +86,13 @@ class InvoiceMaker {
             return result
         }
 
-        fun totalAmount(): Int {
-            var result = 0
-            for(perf in statementData.performances) {
-                result += perf.amount
-            }
-            return result
-        }
-
         var result = "청구 내역 (고객명: ${statementData.customer})\n"
         for(perf in statementData.performances) {
             // print invoices
             result += " ${perf.play.name}: ${usd(perf.amount.toDouble())} (${perf.audience}석)\n"
         }
 
-        result += "총액: ${usd(totalAmount().toDouble())}\n"
+        result += "총액: ${usd(statementData.totalAmount.toDouble())}\n"
         result += "적립 포인트: ${totalVolumeCredits()}점\n"
         return result
     }
