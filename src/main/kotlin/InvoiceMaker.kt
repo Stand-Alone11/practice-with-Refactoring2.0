@@ -7,6 +7,14 @@ import kotlin.math.floor
 
 class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
+        return renderPlainText(invoice, plays)
+    }
+
+    /**
+     * 데이터 생성과 렌더링 작업 분리하기
+     * statement의 본문을 result를 반환하는 함수로 추출한다
+     */
+    fun renderPlainText(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
         fun playFor(aPerformance: Performance): Play {
             return plays[aPerformance.playId]!!
         }
