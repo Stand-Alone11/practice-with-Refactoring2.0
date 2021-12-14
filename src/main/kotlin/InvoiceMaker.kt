@@ -40,15 +40,11 @@ class InvoiceMaker {
         }
 
         fun totalAmount(statementData: StatementData): Int {
-            return statementData.performances.sumOf { it.amount } // 반복문 파이프라인
+            return statementData.performances.sumOf { it.amount }
         }
 
         fun totalVolumeCredits(statementData: StatementData): Int {
-            var result = 0
-            for(perf in statementData.performances) {
-                result += perf.volumeCredit
-            }
-            return result
+            return statementData.performances.sumOf { it.volumeCredit }
         }
 
         fun enrichPerformance(aPerformance: Performance): Performance {
