@@ -47,6 +47,14 @@ class InvoiceMaker {
             return result
         }
 
+        fun totalVolumeCredits(statementData: StatementData): Int {
+            var result = 0
+            for(perf in statementData.performances) {
+                result += perf.volumeCredit
+            }
+            return result
+        }
+
         fun enrichPerformance(aPerformance: Performance): Performance {
             val result = aPerformance.copy()
             result.play = playFor(result)
@@ -59,6 +67,7 @@ class InvoiceMaker {
         statementData.customer = invoice["customer"] as String
         statementData.performances = (invoice["performances"] as List<Performance>).map{ enrichPerformance(it) }
         statementData.totalAmount = totalAmount(statementData)
+        statementData.totalVolumeCredits = totalVolumeCredits(statementData)
 
         return renderPlainText(statementData, plays)
     }
@@ -67,6 +76,7 @@ class InvoiceMaker {
         lateinit var customer: String
         lateinit var performances: List<Performance>
         var totalAmount = -1
+        var totalVolumeCredits = -1
     }
 
     fun renderPlainText(statementData: StatementData, plays: HashMap<String, Play>): String {
@@ -78,14 +88,6 @@ class InvoiceMaker {
             }.format(aNumber / 100)
         }
 
-        fun totalVolumeCredits(): Int {
-            var result = 0
-            for(perf in statementData.performances) {
-                result += perf.volumeCredit
-            }
-            return result
-        }
-
         var result = "청구 내역 (고객명: ${statementData.customer})\n"
         for(perf in statementData.performances) {
             // print invoices
@@ -93,7 +95,7 @@ class InvoiceMaker {
         }
 
         result += "총액: ${usd(statementData.totalAmount.toDouble())}\n"
-        result += "적립 포인트: ${totalVolumeCredits()}점\n"
+        result += "적립 포인트: ${statementData.totalVolumeCredits}점\n"
         return result
     }
 }
