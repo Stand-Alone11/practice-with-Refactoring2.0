@@ -13,7 +13,7 @@ practice with Refactoring2.0 written by Martin Fowler
 - kotlin을 위한 테스트 도구인 kotest를 이용하여 테스트 준비
 - 결과 스트링을 비교하는 코드로 작성함
 
-### 느낀 점
+### thinking & opinion
 
 - 아주 유연한 자바스크립트를 코틀린으로 변환시키면서 생기는 문제점들이 있었다.
   - 이미 존재하는 객체에 새로운 프로퍼티를 추가하기
