@@ -1,5 +1,6 @@
 # practice-with-Refactoring2.0
-practice with Refactoring2.0 written by Martin Fowler
+practice with Refactoring2.0 written by Martin Fowler<br>
+각 챕터별 브랜치의 리퀘스트를 통해 커밋 이력을 볼 수 있다.
 
 ## Chap 1. 첫번째 예시
 
