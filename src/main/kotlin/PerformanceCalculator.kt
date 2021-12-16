@@ -2,8 +2,8 @@ import dto.Performance
 import dto.Play
 import kotlin.math.floor
 
-class PerformanceCalculator(val performance: Performance, val play: Play) {
-    fun amount(): Int {
+open class PerformanceCalculator(val performance: Performance, val play: Play) {
+    open fun amount(): Int {
         var result = 0
         when(play.type) {
             "tragedy" -> {
@@ -25,13 +25,13 @@ class PerformanceCalculator(val performance: Performance, val play: Play) {
     }
 
     // slide volumeCredits() from InvoiceMaker.createStatementData()
-    fun volumeCredits(): Int {
+    open fun volumeCredits(): Int {
         var result = 0
         result += Math.max(performance.audience - 30 , 0)
         if("comedy" == play.type) result += floor((performance.audience / 5).toDouble()).toInt()
         return result
     }
 
-    val amount = amount()
+    open val amount = amount()
     val volumeCredits = volumeCredits()
 }
