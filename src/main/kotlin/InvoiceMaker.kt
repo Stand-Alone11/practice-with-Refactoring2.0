@@ -1,5 +1,6 @@
 import dto.Performance
 import dto.Play
+import dto.StatementData
 import java.text.NumberFormat
 import java.util.*
 import kotlin.collections.HashMap
@@ -65,13 +66,6 @@ class InvoiceMaker {
         statementData.totalAmount = totalAmount(statementData)
         statementData.totalVolumeCredits = totalVolumeCredits(statementData)
         return statementData
-    }
-
-    class StatementData() {
-        lateinit var customer: String
-        lateinit var performances: List<Performance>
-        var totalAmount = -1
-        var totalVolumeCredits = -1
     }
 
     fun renderPlainText(statementData: StatementData): String {
