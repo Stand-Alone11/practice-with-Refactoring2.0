@@ -10,6 +10,10 @@ class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
         return renderPlainText(createStatementData(invoice, plays))
     }
+    // Calculator Factory
+    fun createPerformanceCalculator(performance: Performance, play: Play): PerformanceCalculator {
+        return PerformanceCalculator(performance, play)
+    }
 
     fun createStatementData(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): StatementData {
         fun playFor(aPerformance: Performance): Play {
@@ -25,8 +29,7 @@ class InvoiceMaker {
         }
 
         fun enrichPerformance(aPerformance: Performance): Performance {
-
-            val calculator = PerformanceCalculator(aPerformance, playFor(aPerformance))
+            val calculator = createPerformanceCalculator(aPerformance, playFor(aPerformance))
             val result = aPerformance.copy()
             result.play = calculator.play
             result.amount = calculator.amount
