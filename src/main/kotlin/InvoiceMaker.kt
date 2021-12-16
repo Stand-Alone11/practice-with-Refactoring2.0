@@ -12,6 +12,9 @@ class InvoiceMaker {
     }
     // Calculator Factory
     fun createPerformanceCalculator(performance: Performance, play: Play): PerformanceCalculator {
+        when(play.type) {
+            "tragedy" -> return TragedyCalculator(performance, play)
+        }
         return PerformanceCalculator(performance, play)
     }
 
