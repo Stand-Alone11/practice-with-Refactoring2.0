@@ -16,10 +16,6 @@ class InvoiceMaker {
             return plays[aPerformance.playId]!!
         }
 
-        fun amountFor(aPerformance: Performance): Int {
-            return PerformanceCalculator(aPerformance, playFor(aPerformance)).amount
-        }
-
         fun volumeCreditsFor(aPerformance: Performance): Int {
             var result = 0
             result += Math.max(aPerformance.audience - 30 , 0)
@@ -40,7 +36,7 @@ class InvoiceMaker {
             val calculator = PerformanceCalculator(aPerformance, playFor(aPerformance))
             val result = aPerformance.copy()
             result.play = calculator.play // playFor() -> calculator.play
-            result.amount = amountFor(result)
+            result.amount = calculator.amount
             result.volumeCredit = volumeCreditsFor(result)
             return result
         }
