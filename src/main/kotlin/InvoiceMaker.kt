@@ -15,8 +15,8 @@ class InvoiceMaker {
         when(play.type) {
             "tragedy" -> return TragedyCalculator(performance, play)
             "comedy" -> return ComedyCalculator(performance, play)
+            else -> throw Exception("알 수 없는 장르")
         }
-        return PerformanceCalculator(performance, play)
     }
 
     fun createStatementData(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): StatementData {
