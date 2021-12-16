@@ -17,24 +17,7 @@ class InvoiceMaker {
         }
 
         fun amountFor(aPerformance: Performance): Int {
-            var result = 0
-            when(aPerformance.play.type) {
-                "tragedy" -> {
-                    result = 40000;
-                    if(aPerformance.audience > 30) {
-                        result += 1000 * (aPerformance.audience - 30)
-                    }
-                }
-                "comedy" -> {
-                    result = 30000
-                    if(aPerformance.audience > 20) {
-                        result += 10000 + 500 * (aPerformance.audience - 20)
-                    }
-                    result += 300 * aPerformance.audience
-                }
-                else -> throw Exception("알 수 없는 장르: ${aPerformance.play.type}")
-            }
-            return result
+            return PerformanceCalculator(aPerformance, playFor(aPerformance)).amount
         }
 
         fun volumeCreditsFor(aPerformance: Performance): Int {
