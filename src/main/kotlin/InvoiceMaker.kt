@@ -16,13 +16,6 @@ class InvoiceMaker {
             return plays[aPerformance.playId]!!
         }
 
-        fun volumeCreditsFor(aPerformance: Performance): Int {
-            var result = 0
-            result += Math.max(aPerformance.audience - 30 , 0)
-            if("comedy" == aPerformance.play.type) result += floor((aPerformance.audience / 5).toDouble()).toInt()
-            return result
-        }
-
         fun totalAmount(statementData: StatementData): Int {
             return statementData.performances.sumOf { it.amount }
         }
@@ -32,12 +25,12 @@ class InvoiceMaker {
         }
 
         fun enrichPerformance(aPerformance: Performance): Performance {
-            // add calculator
+
             val calculator = PerformanceCalculator(aPerformance, playFor(aPerformance))
             val result = aPerformance.copy()
-            result.play = calculator.play // playFor() -> calculator.play
+            result.play = calculator.play
             result.amount = calculator.amount
-            result.volumeCredit = volumeCreditsFor(result)
+            result.volumeCredit = calculator.volumeCredits // volumeCreditsFore() -> calculator.volumeCredits
             return result
         }
 
