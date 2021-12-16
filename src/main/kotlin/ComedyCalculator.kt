@@ -11,5 +11,9 @@ class ComedyCalculator(aPerformance: Performance, aPlay: Play): PerformanceCalcu
         return result
     }
 
+    override fun volumeCredits(): Int {
+        return super.volumeCredits() + Math.floor((performance.audience / 5).toDouble()).toInt()
+    }
+
     override val amount = amount()
 }
