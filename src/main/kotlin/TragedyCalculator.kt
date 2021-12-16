@@ -9,5 +9,6 @@ class TragedyCalculator(aPerformance: Performance, aPlay: Play): PerformanceCalc
         }
         return result
     }
+
     override val amount = amount()
 }
