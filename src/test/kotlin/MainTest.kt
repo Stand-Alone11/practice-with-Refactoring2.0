@@ -24,8 +24,8 @@ class MainTest: AnnotationSpec(){
             return plays
         }
 
-        invoice = getInvoice();
-        plays = getPlays();
+        invoice = getInvoice()
+        plays = getPlays()
     }
 
 
@@ -34,5 +34,13 @@ class MainTest: AnnotationSpec(){
         val invoiceMaker = InvoiceMaker()
         val result = invoiceMaker.statement(invoice, plays)
         result shouldBe "청구 내역 (고객명: BicCo)\n Hamlet: US${'$'}650.00 (55석)\n as-like: US${'$'}580.00 (35석)\n Othello: US${'$'}500.00 (40석)\n총액: US${'$'}1,730.00\n적립 포인트: 47점\n"
+    }
+
+    @Test
+    fun performanceCalculatorResult() {
+        val result = InvoiceMaker().createStatementData(invoice, plays)
+        result.toString() shouldBe "StatementData(totalAmount=173000, totalVolumeCredits=47, customer=BicCo)"
+        //print(result)
+
     }
 }
