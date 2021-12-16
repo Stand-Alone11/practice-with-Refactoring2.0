@@ -53,8 +53,10 @@ class InvoiceMaker {
         }
 
         fun enrichPerformance(aPerformance: Performance): Performance {
+            // add calculator
+            val calculator = PerformanceCalculator(aPerformance, playFor(aPerformance))
             val result = aPerformance.copy()
-            result.play = playFor(result)
+            result.play = calculator.play // playFor() -> calculator.play
             result.amount = amountFor(result)
             result.volumeCredit = volumeCreditsFor(result)
             return result
