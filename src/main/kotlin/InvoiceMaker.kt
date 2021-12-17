@@ -1,5 +1,6 @@
 import dto.Performance
 import dto.Play
+import dto.StatementData
 import java.text.NumberFormat
 import java.util.*
 import kotlin.collections.HashMap
@@ -7,47 +8,64 @@ import kotlin.math.floor
 
 class InvoiceMaker {
     fun statement(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): String {
-        var totalAmount = 0;
-        var volumeCredits = 0;
-        var result = "청구 내역 (고객명: ${invoice["customer"]})\n"
+        return renderPlainText(createStatementData(invoice, plays))
+    }
+    // Calculator Factory
+    fun createPerformanceCalculator(performance: Performance, play: Play): PerformanceCalculator {
+        when(play.type) {
+            "tragedy" -> return TragedyCalculator(performance, play)
+            "comedy" -> return ComedyCalculator(performance, play)
+            else -> throw Exception("알 수 없는 장르")
+        }
+    }
 
-        val format = NumberFormat.getCurrencyInstance().apply {
-            maximumFractionDigits = 2
-            minimumFractionDigits = 2
-            currency = Currency.getInstance(Locale.US)
+    fun createStatementData(invoice: HashMap<String, Any>, plays: HashMap<String, Play>): StatementData {
+        fun playFor(aPerformance: Performance): Play {
+            return plays[aPerformance.playId]!!
         }
 
-        for(perf in invoice["performances"] as List<Performance>) {
-            val play = plays[perf.playId]
-            var thisAmount = 0
+        fun totalAmount(statementData: StatementData): Int {
+            return statementData.performances.sumOf { it.amount }
+        }
 
-            when(play!!.type) {
-                "tragedy" -> {
-                    thisAmount = 40000;
-                    if(perf.audience > 30) {
-                        thisAmount += 1000 * (perf.audience - 30)
-                    }
-                }
-                "comedy" -> {
-                    thisAmount = 30000
-                    if(perf.audience > 20) {
-                        thisAmount += 10000 + 500 * (perf.audience - 20)
-                    }
-                    thisAmount += 300 * perf.audience
-                }
-                else -> throw Exception("알 수 없는 장르: ${play.type}")
-            }
-            // add point
-            volumeCredits += Math.max(perf.audience - 30 , 0)
-            // add 5points per an audience of Comedy
-            if("comedy" == play.type) volumeCredits += floor((perf.audience / 5).toDouble()).toInt()
+        fun totalVolumeCredits(statementData: StatementData): Int {
+            return statementData.performances.sumOf { it.volumeCredit }
+        }
 
+        fun enrichPerformance(aPerformance: Performance): Performance {
+            val calculator = createPerformanceCalculator(aPerformance, playFor(aPerformance))
+            val result = aPerformance.copy()
+            result.play = calculator.play
+            result.amount = calculator.amount
+            result.volumeCredit = calculator.volumeCredits // volumeCreditsFore() -> calculator.volumeCredits
+            return result
+        }
+
+        val statementData = StatementData()
+        statementData.customer = invoice["customer"] as String
+        statementData.performances = (invoice["performances"] as List<Performance>).map{ enrichPerformance(it) }
+        statementData.totalAmount = totalAmount(statementData)
+        statementData.totalVolumeCredits = totalVolumeCredits(statementData)
+        return statementData
+    }
+
+    fun renderPlainText(statementData: StatementData): String {
+        fun usd(aNumber: Double): String {
+            return NumberFormat.getCurrencyInstance().apply {
+                maximumFractionDigits = 2
+                minimumFractionDigits = 2
+                currency = Currency.getInstance(Locale.US)
+            }.format(aNumber / 100)
+        }
+
+        var result = "청구 내역 (고객명: ${statementData.customer})\n"
+        for(perf in statementData.performances) {
             // print invoices
-            result += " ${play.name}: ${format.format(thisAmount.toDouble() / 100)} (${perf.audience}석)\n"
-            totalAmount += thisAmount
+            result += " ${perf.play.name}: ${usd(perf.amount.toDouble())} (${perf.audience}석)\n"
         }
-        result += "총액: ${format.format(totalAmount.toDouble() / 100)}\n"
-        result += "적립 포인트: ${volumeCredits}점\n"
+
+        result += "총액: ${usd(statementData.totalAmount.toDouble())}\n"
+        result += "적립 포인트: ${statementData.totalVolumeCredits}점\n"
         return result
     }
 }
