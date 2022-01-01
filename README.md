@@ -412,7 +412,7 @@ val managerName = aPerson.managerName //manager, department 숨김
 
 ## chap 6. 기본적인 리팩터링
 
-# 6.1
+### 6.1
 
 함수 추출하기
 
