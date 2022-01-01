@@ -415,3 +415,5 @@ val managerName = aPerson.managerName //manager, department 숨김
 # 6.1
 
 함수 추출하기
+
+# 6.10
