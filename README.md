@@ -430,3 +430,210 @@ val managerName = aPerson.managerName //manager, department 숨김
 5. 원본함수에서 추출한 함수를 호출하는 코드로 변경
 6. 테스트
 7. 추출한 함수와 같거나 비슷한 코드가 있는지 체크, 있다면 추출 함수를 호출하도록 바꿀지 검토
+
+**예시**
+
+**유효범위를 벗어나는 변수가 없을 때**
+
+```kotlin
+// 원본 code
+fun printOwing(invoice: Invoice) {
+  var outstanding = 0
+  
+  println("**************")
+  println("***고객 채무***")
+  println("**************")
+  
+  // 미해결 채무(outstading)을 계산
+  for(i in invoice.orders) {
+    outstanding += i.amout
+  }
+  
+  // 마감일(dueDate)을 기록
+  val today = Clock.today // 시스템 시간을 사용하지 않고 별도의 wrapper를 만들어 사용하면 테스트 결과를 일정하게 할 수 있다.
+  invoice.dueDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30)
+  
+  // 세부 사항 출력
+  println("고객명: ${invoice.customer}")
+  println("채무액: ${outstanding}")
+  println("마감일: ${invoice.dueDate.toLocalDateString()}")
+}
+```
+
+```kotlin
+// println 추출
+fun printOwing(invoice: Invoice) {
+  var outstanding = 0
+  
+  printBanner() // <-- 배너 출력 추출
+  
+  // 미해결 채무(outstading)을 계산
+  for(i in invoice.orders) {
+    outstanding += i.amout
+  }
+  
+  // 마감일(dueDate)을 기록
+  val today = Clock.today
+  invoice.dueDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30)
+  
+  fun printDetails() { // <-- nested method로 추출하여 invoice에 접근 가능
+  	println("고객명: ${invoice.customer}")
+  	println("채무액: ${outstanding}")
+	  println("마감일: ${invoice.dueDate.toLocalDateString()}")  
+  }
+  
+  printDetails()
+}
+
+fun printBanner() {
+  println("**************")
+  println("***고객 채무***")
+  println("**************")
+}
+```
+
+**지역 변수를 사용할 때**
+
+지역 변수를 그대로 사용할 때, 매개변수로 그냥 넘기자.
+
+```kotlin
+// printDetail() 밖으로 추출
+fun printOwing(invoice: Invoice) {
+  var outstanding = 0
+  
+  printBanner()
+  
+  // 미해결 채무(outstading)을 계산
+  for(i in invoice.orders) {
+    outstanding += i.amout
+  }
+  
+  // 마감일(dueDate)을 기록
+  val today = Clock.today
+  invoice.dueDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30)
+    
+  printDetails(invoice, outstanding)
+}
+
+fun(invoice: Invoice, outstanding: Int) { // <-- 지역 변수를 매개변수로 받음
+  println("고객명: ${invoice.customer}")
+  println("채무액: ${outstanding}")
+	println("마감일: ${invoice.dueDate.toLocalDateString()}")
+}
+
+fun printBanner() {
+  println("**************")
+  println("***고객 채무***")
+  println("**************")
+}
+```
+
+```kotlin
+// invoice date 할당 로직도 추출
+fun printOwing(invoice: Invoice) {
+  var outstanding = 0
+  
+  printBanner()
+  
+  // 미해결 채무(outstading)을 계산
+  for(i in invoice.orders) {
+    outstanding += i.amout
+  }
+  
+  recordDueDate(invoice) // <-- 마감일 설정 함수 추출, invoice 매개변수로 전달
+  printDetails(invoice, outstanding)
+}
+
+fun recordDueDate(invoice: Invoice) {
+  val today = Clock.today
+  invoice.dueDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30)
+}
+
+fun(invoice: Invoice, outstanding: Int) { // <-- 지역 변수를 매개변수로 받음
+  println("고객명: ${invoice.customer}")
+  println("채무액: ${outstanding}")
+	println("마감일: ${invoice.dueDate.toLocalDateString()}")
+}
+
+fun printBanner() {
+  println("**************")
+  println("***고객 채무***")
+  println("**************")
+}
+```
+
+**지역 변수의 값을 변경할 때**
+
+지역변수의 값을 변경하는 코드를 발견한다면 [변수 쪼개기](#91)로 임시 변수를 만들고 그 변수에 대입한다. 임시 변수는 크게 2가지로 나눌 수 있다.
+
+- 추출 함수안에서만 사용됨
+- 함수 밖에서 사용됨
+
+```kotlin
+// 1. 변수 선언을 로직과 가까운 데로 옮김
+fun printOwing(invoice: Invoice) {
+  printBanner()
+  
+  // 미해결 채무(outstading)을 계산
+  var outstanding = 0 // <-- 로직 근처로 이동
+  for(i in invoice.orders) {
+    outstanding += i.amout
+  }
+  
+  recordDueDate(invoice)
+  printDetails(invoice, outstanding)
+}
+```
+
+```kotlin
+// 2. 추출 부분을 새 함수로 복사
+fun printOwing(invoice: Invoice) {
+  printBanner()
+  
+  // 미해결 채무(outstading)을 계산
+  var outstanding = 0
+  for(i in invoice.orders) {
+    outstanding += i.amout
+  }
+  
+  recordDueDate(invoice)
+  printDetails(invoice, outstanding)
+}
+
+fun calculateOutstanding(invoice: Invoice): Int {
+  var outstanding = 0
+  for(i in invoice.orders) {
+    outstanding += i.amout
+  }
+  return ourstanding // <-- 수정된 값 반환
+}
+```
+
+```kotlin
+// 3. outstanding 선언까지 함수로 추출하여 매개변수로 전달할 필요 없음
+// 4. 컴파일
+// 5. 추출한 코드의 반환 값을 원래 변수에 저장
+// 6. 코드 변수명 바꾸기
+fun printOwing(invoice: Invoice) {
+  printBanner()
+  
+  // 미해결 채무(outstading)을 계산
+  val outstanding = calculateOutstanding() // <-- 5. 반환 값 불변으로 저장
+  recordDueDate(invoice)
+  printDetails(invoice, outstanding)
+}
+
+fun calculateOutstanding(invoice: Invoice): Int {
+  var result = 0 // <-- 6. 변수명 바꾸기
+  for(i in invoice.orders) {
+    outstanding += i.amout
+  }
+  return result
+}
+```
+
+> 반환할 변수가 여러 개라면?
+>
+> - 각각의 변수를 하나씩 반환하는 함수들로 쪼개기 추천
+> - 레코드로 묶어 반환할 수도 있지만, 임시 변수를 [질의 함수로 바꾸기](#74) 적용 혹은 [변수 쪼개기](#91) 적용
+> - 원래 함수의 스코프 밖으로 추출해보면 코드를 제대로 추출했는지 알 수 있다.
