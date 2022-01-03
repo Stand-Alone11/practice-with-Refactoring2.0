@@ -637,3 +637,142 @@ fun calculateOutstanding(invoice: Invoice): Int {
 > - 각각의 변수를 하나씩 반환하는 함수들로 쪼개기 추천
 > - 레코드로 묶어 반환할 수도 있지만, 임시 변수를 [질의 함수로 바꾸기](#74) 적용 혹은 [변수 쪼개기](#91) 적용
 > - 원래 함수의 스코프 밖으로 추출해보면 코드를 제대로 추출했는지 알 수 있다.
+
+### 6.5
+
+함수 선언 바꾸기
+
+**배경**
+
+함수는 레고 블럭과 같다고 생각한다. 함수는 소프트웨어 시스템의 구성요소를 조립하는 연결부이다. 따라서 연결부가 잘 정의되어 있다면 새로운 부분을 추가하기가 쉬워진다. 다행이 소프트웨어는 말그대로 소프트하기 때문에 연결부를 수정할 수 있다.
+
+연결부에서 가장 중요한 것은 이름이다. 코드 그 자체로 함수의 목적을 설명할 수 있어 가독성이 좋아지고 코드 이해가 쉬워진다.
+
+> 이름짓기 Tip: 주석으로 함수의 목적을 설명해보면 알맞은 이름을 찾을 수 있다.
+
+함수의 매개변수 또한 중요하다. 매개변수는 함수를 사용하는 문맥(상황)을 설정한다. 매개변수를 어떻게 설정하느냐에 따라 함수 활용의 범위도 달라진다. 적절한 매개변수 선택은 다른 모듈과의 결합을 지울 수 있다. 그러나 적절한 매개변수 선택에는 정답이 없고 시스템 구성의 변화, 코드 로직에 대한 이해에 따라 유연하게 대처해야한다.
+
+**절차**
+
+간단한 절차 - 단번에 수정
+
+1. 매개변수를 제거하려면 함수 본문에서 해당 매개변수를 사용하는지 확인한다.
+2. 메서드 선언을 바꾼다.
+3. 기존 메서드를 참조하는 부분을 모두 찾아 바꾼다. (IDE 기능 사용 추천)
+4. 테스트
+
+이름과 매개변수 모두 바꾸고 싶다면 각각 독립적으로 처리하고 문제가 생기면 마이그레이션 절차로 넘어간다.
+
+마이그레이션 절차 - 점진적 수정
+
+1. 함수의 본문을 적절히 리팩터링한다. 하지만 적절히가 가장 어렵다.
+2. 본문을 새로운 함수로 추출한다.
+3. 추출한 함수에 매개변수를 추가해야한다면 `간단한 절차`를 따라 추가한다.
+4. 테스트
+5. 기존 함수를 인라인한다.
+6. 이름을 임시로 붙여두었으면 원래 이름으로 수정한다.
+7. 테스트
+
+**예시**
+
+**함수 이름 바꾸기 - 간단한 절차**
+
+```kotlin
+// 원본 code
+fun circum(radius: Double): Double {
+  return 2 * Math.PI * radius
+}
+```
+
+```kotlin
+fun circumference(radius: Double): Double { // <-- 이름 변경
+  return 2 * Math.PI * radius
+}
+```
+
+**함수 이름 바꾸기  - 마이그레이션 절차**
+
+```kotlin
+fun circum(radius: Double): Double { // <-- 원래 함수는 놔두고 리팩터링한 함수를 리턴한다.
+  return circumference(radius)
+}
+
+fun circumference(radius: Double): Double {
+  return 2 * Math.PI * radius
+}
+```
+
+함수 선언 바꾸기는 공개된 API를 리팩터링 하기에 좋다. 기존 함수의 껍데기는 살려두고 내부만 바꿔 적용 가능하기 때문이다. 기존 함수는 deprecated를 고지하고 모든 클라이언트가 새로운 함수로 마이그레이션하면 이전 함수는 지울 수 있다.(게으른 클라이언트로 인해 지울 수 없을 수도 있다.)
+
+**매개변수 추가하기 - 마이그레이션 절차** 
+
+```kotlin
+// 원본 code
+fun addReservation(customer: Customer) {
+  this._reservations.add(customer)
+}
+```
+
+요구사항: 우선순위 큐에 customer를 넣어야 한다.
+
+```kotlin
+// 2. 새로운 함수로 추출
+fun addReservation(customer: Customer) {
+  this.zz_addReservation(customer) // <-- 임시 이름
+}
+
+fun zz_addReservation(customer: Customer) {
+  this._resulvations.add(customer)
+}
+```
+
+```kotlin
+// 3. 매개변수 추가
+fun addReservation(customer: Customer) {
+  this.zz_addReservation(customer, false)
+}
+
+fun zz_addReservation(customer: Customer, isPriority: Boolean) {
+  this._resulvations.add(customer)
+}
+```
+
+**매개변수를 속성으로 바꾸기**
+
+```kotlin
+//원본 code 고객이 NewEngland 주에 살고 있는지 판단하는 함수
+fun inNewEngland(aCustomer: Customer): Boolean {
+  return listOf("MA", "CT", "ME", "VT", "NH", "RI").contains(aCustomer.address.state)
+}
+```
+
+```kotlin
+// 1. 변수 추출
+// 2. 함수 추출
+fun inNewEngland(aCustomer: Customer): Boolean {
+ val stateCode = aCustomer.address.state // <-- 1. 변수 추출
+  return xxNewInNewEngland(stateCode)
+}
+
+fun xxNewInNewEngland(stateCode: String): Boolean { // <-- 2. 함수 추출, 임시 이름, 매개변수 변경
+  return listOf("MA", "CT", "ME", "VT", "NH", "RI").contains(stateCode)
+}
+```
+
+```kotlin
+fun inNewEngland(aCustomer: Customer): Boolean {
+  return xxNewInNewEngland(aCustomer.address.state) // <-- 추출한 임시 변수 인라인
+}
+```
+
+```Kotlin
+// 함수 호출문
+val newEnglanders = somCustomers.filter{ c -> xxNewInNewEngland(c.address.state)} // <-- 함수 인라인
+
+val newEnglanders = somCustomers.filter{ c -> inNewEngland(c.address.state)} // <-- 함수 이름 변경
+
+fun inNewEngland(stateCode: String): Boolean { // <-- 함수 이름 변경
+  return listOf("MA", "CT", "ME", "VT", "NH", "RI").contains(stateCode)
+}
+```
+
