@@ -775,3 +775,54 @@ fun inNewEngland(stateCode: String): Boolean { // <-- 함수 이름 변경
   return listOf("MA", "CT", "ME", "VT", "NH", "RI").contains(stateCode)
 }
 ```
+
+### 6.7
+
+변수 이름 바꾸기
+
+**배경**
+
+변수명을 처음부터 잘 지으면 좋겠지만 그렇지 않은 경우가 더 많을 것이다. 결국 더욱 적절한 변수명으로 고쳐야 할 경우가 발생한다. 특히 값을 계속 사용하는 필드의 경우 더욱 신중하게 이름을 지어야 한다.
+
+**절차**
+
+1. 폭넓게 쓰이는 변수는 [변수 캡슐화하기](#66)를 고려한다.
+2. 이름을 바꿀 변수를 참조하는 곳을 모두 찾아 `하나씩` 변경한다.
+   - 다른 코드 베이스에서도 참조하는 변수라면 이름을 바꿀 수 없다.
+3. 테스트
+
+**예시**
+
+함수 밖에서도 참조 가능한 변수 이름을 바꾸는 예시 (이 외에는 너무 간단하다.)
+
+```kotlin
+// 원본 code
+var tpHd = "untitled"
+
+// 변수를 읽기만하는 코드
+var result += "<h1>${tpHd}</h1>"
+
+// 변수를 수정하는 코드
+tpHd = "anotherString"
+```
+
+```kotlin
+// 1. 변수 캡슐화 하기
+fun title(): String = tpHd
+fun setTitle(arg: String) {
+  tpHd = arg
+}
+
+setTitle("anotherString")
+result += "<h1>${title()}</h1>"
+
+// 변수명 수정
+
+var _title = "untitled" // <-- 변수명 수정
+
+fun title(): String = _title // <-- 수정된 변수명 적용
+fun setTitle(arg: String) {
+  _title = arg // <-- 수정된 변수명 적용
+}
+```
+
