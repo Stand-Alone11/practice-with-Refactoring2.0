@@ -95,7 +95,7 @@ practice with Refactoring2.0 written by Martin Fowler<br>
 
 - [함수 선언 바꾸기](#65)
 - [변수 이름 바꾸기](#67)
-- [필드 이름 바꾸기](#9.2)
+- [필드 이름 바꾸기](#92)
 
 ### 중복 코드
 
