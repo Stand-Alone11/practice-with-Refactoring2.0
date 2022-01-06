@@ -825,4 +825,61 @@ fun setTitle(arg: String) {
   _title = arg // <-- 수정된 변수명 적용
 }
 ```
+## chap 9. 데이터 조직화
 
+### 9.2
+
+필드 이름 바꾸기
+
+**배경**
+
+프로그램 곳곳에 쓰이는 레코드 구조체의 필드 이름은 매우 중요하다. 데어터 구조는 코드를 이해하는데 핵심 역할을 한다. 따라서 레코드의 필드 이름을 더욱 알맞게 바꿔야 한다. 또한 클래스에서 게터 세터의 이름은 필드와 다를바 없다. 게터 세터의 이름도 필드와 마찬가지로 중요하다.
+
+**절차**
+
+1. 레코드의 유효 범위가 제한적이라면 필드에 접근하는 모든 코드를 수정 후 테스트한다. 다음 절차는 필요 없다.
+2. 레코드가 캡슐화 되어 있지 않다면 [캡슐화](#71)한다.
+3. 캡슐화된 객체 내부의 private 필드명을 바꾸고 그에 맞게 내부 메서드 변경한다.
+4. 테스트
+5. 생성자의 매개변수와 필드가 겹치면 [함수 선언 바꾸기](#65)로 변경한다.
+6. 접근자들의 이름도 [변경](#65)한다.
+
+**예시**
+
+자바스크립트의 익명 객체를 코틀린으로 표현하기 어렵다. dynamic이 있지만 jvm을 위한 타입이 아니다. 따라서 data class부터 시작한다.
+
+```kotlin
+//원본 코드 js
+const organization = {name: "애크미 구스베리", country: "GB"};
+
+data class Organization(val data: Person) {
+  var _name: String = data.name
+  // 자바로 바뀌면
+   @NotNull
+   private final String _name;
+   @NotNull
+   private final String _country;
+
+   @NotNull
+   public final String get_name() {
+      return this._name;
+   }
+
+   @NotNull
+   public final String get_country() {
+      return this._country;
+   }
+// 자바 끝
+  var _country: String = data.country
+}
+```
+
+```kotlin
+//필드 이름 바꾸기
+data class Organization(val data: Person) {
+  private var _title: String = data.name // <-- 필드 이름 변경
+  private var _country: String = data.country
+}
+```
+
+kotlin은 타입 언어이므로 필드 이름은 변경하면 이미 컴파일 타임에 에러가 생긴다. 따라서 js 보다 훨씬 휴먼에러를 줄일 수 있다.
