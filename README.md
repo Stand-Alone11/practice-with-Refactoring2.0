@@ -104,7 +104,7 @@ practice with Refactoring2.0 written by Martin Fowler<br>
 **리팩터링 기법**
 
 - [함수 추출하기](#61)
-- [문장 슬라이드하기](#8.6) 이후 함수 추출하기
+- [문장 슬라이드하기](#86) 이후 함수 추출하기
 - [메서드 올리기](#12.1)
   - 부모로부터 파생된 서브클래스에 코드 중복이 있다면 부모 클래스로 옮긴다.
 
@@ -161,7 +161,7 @@ practice with Refactoring2.0 written by Martin Fowler<br>
   - 정해놓은 함수를 거쳐 값을 변경하면 데이터 변경 감시, 코드 개선에 용이하다.
 - [변수 쪼개기](#9.1)
   - 하나의 변수가 다른 값들을 저장한다면 각 용도 별로 변수를 쪼개자.
-- [문장 슬라이드하기](#8.6), [함수 추출하기](#61)
+- [문장 슬라이드하기](#86), [함수 추출하기](#61)
   - 갱신 로직을 별도로 분리하는게 좋다.
 - [질의 함수와 변경 함수 분리하기](#11.1)
   - API를 만들 때 값을 읽는 함수와 값을 변경하는 함수는 분리한다.
@@ -825,6 +825,78 @@ fun setTitle(arg: String) {
   _title = arg // <-- 수정된 변수명 적용
 }
 ```
+
+## chap 8. 기능 이동
+
+### 8.6
+
+문장 슬라이드하기
+
+**배경**
+
+관련된 코드들을 서로 가까이에 두면 코드를 이해하기 수월하다. 문장 슬라이드를 통해 관련된 코드를 모아둘 수 있다. 문장 슬라이드하기는 보통 [함수 추출하기](#61)에 앞서 선행된다
+
+**절차**
+
+1. 코드 조각을 옮길 목표 위치를 체크한다. 다음 상황이라면 이 리팩터링은 할 수 없다.
+   - 옮길 코드에서 참조하는 요소를 선언하는 문장 앞으로 이동 불가
+   - 옮길 코드를 참조하는 요소의 뒤로 이동 불가
+   - 옮길 코드에서 참조하는 요소를 수정하는 문장 건너 뛰기 불가
+   - 옮길 코드가 수정하는 요소를 참조하는 요소를 건너 뛰기 불가
+2. 코드 조각을 잘라 목표 위치로 옮긴다.
+3. 테스트
+
+**예시**
+
+코드를 슬라이드 시키려면 무엇을 슬라이드할지, 슬라이드가 가능한지 체크한다. 슬라이드할 코드 자체와 그 코드가 건너 뛰어야할 코드 모두 살펴야한다. 코드의 순서가 바뀌면 동작이 달라지는지 체크한다.
+
+```kotlin
+val pricingPlan = retrievePricingPlan()
+val order = retreiveOrder() // <-- order를 처음 사용하는 val units = .. 위로 이동
+val baseCharge = pricingPlan.base
+var charge = 0 
+val chargePerUnit = pricingPlan.unit
+val units = order.units
+var discount = 0 // <-- discount를 실제로 사용하는 discount = .. 위로 이동
+charge = baseCharge + units * chargePerUnit
+var discountableUnits = Math.max(units - pricingPlan.discountThreshold, 0)
+discount = discountable * pricingPlan.discountFactor
+if(order.isRepeat) discount += 20
+charge = charge - discount
+chargeOrder(charge)
+```
+
+order에 할당하는 retreiveOrder() 코드 내부도 살펴봐야 한다. 그러나 질의 함수를 잘 만들어 놨다면 대부분 코드 이동이 가능하다.
+
+항시 테스트를 통해 리팩터링이 가능한지 결과를 보아야 한다. 테스트 커버리지가 넓지 않다면 더욱 신중히 리팩터링한다. 테스트를 실패했다면 더 작게 슬라이드 해보거나 덜 위험한 부분까지 슬라이드 해본다.
+
+**예시: 조건문이 있을 때 슬라이드**
+
+조건문 밖으로 슬라이드하면 중복 로직이 제거될 것이고 조건문 안으로 슬라이드하면 로직이 중복될 것이다.
+
+```kotlin
+var result = null
+if(availableResources.length == 0) {
+  result = createResource()
+  allocatedResouces.push(result!!) // 중복로직
+} else {
+  result = availableResources.pop()
+  allocatedResources.push(result!!) // 중복로직
+}
+return result
+```
+
+```kotlin
+var result = null
+if(availableResources.length == 0) {
+  result = createResource()
+} else {
+  result = availableResources.pop()
+}
+allocatedResources.push(result!!) // 조건문 밖으로 슬라이드하여 중복로직이 합쳐짐
+return result
+```
+
 ## chap 9. 데이터 조직화
 
 ### 9.2
