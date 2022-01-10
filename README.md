@@ -955,3 +955,61 @@ data class Organization(val data: Person) {
 ```
 
 kotlin은 타입 언어이므로 필드 이름은 변경하면 이미 컴파일 타임에 에러가 생긴다. 따라서 js 보다 훨씬 휴먼에러를 줄일 수 있다.
+
+
+## chap 12. 상속 다루기
+
+### 12.1
+
+메서드 올리기 <---> [메서드 내리기](#124)
+
+**배경**
+
+중복코드는 한쪽의 변경이 다른 한쪽에는 반영되지 않을 수 있는 상황을 만들 수 있다. 하지만 중복코드를 찾기는 쉽지 않다.
+
+메서드 올리기를 적용하려면 선행 단계를 거쳐야 할 때가 많다. 다른 클래스의 [메서드를 매개변수화](#112) 하면 같은 메서드가 되기도 한다. 그 후 메서드를 상속 계층의 위로 올린다. 반면 메서드 올리기를 적용하기 가장 복잡한 상황은 메서드 본문에서 서브클래스의 필드를 참조하는 상황이다. 이럴 땐, 먼저 [필드를 슈퍼클래스로 올리고](#122) 메서드를 올린다.
+
+**절차**
+
+1. 똑같이 동작하는 메서드인지 확인, 일은 같지만 코드가 다르다면 같아질 때까지 리팩터링한다.
+2. 메서드 안에서 호출하는 다른 메서드와 참조하는 필드들을 슈퍼클래스에서도 호출, 참조가 가능한지 확인한다.
+3. [함수 선언 바꾸기](#65)로 메서드 시그니처를 동일하게 만든다.
+4. 슈퍼클래스에 새로운 메서드를 생성하고, 대상 메서드 본문을 넣는다.
+5. 정적 검사 수행
+6. 서브클래스 중 하나의 메서드를 제거한다.
+7. 테스트
+8. 모든 서브클래스에 6, 7과정을 반복한다.
+
+**예시**
+
+```kotlin
+class Employee : Party() {
+  val monthlyCost = 10
+  fun annualCost() : Int = monthlyCost * 12
+}
+
+class Department : Party() {
+  val monthlyCost = 20
+  fun totalAnnualCost() : Int = monthlyCost * 12
+}
+```
+
+두 클래스에서 같은 메서드를 찾았다. 두 메서드의 이름이 다르므로 [함수 선언 바꾸기](#65)로 이름을 통일한다.
+
+서브클래스 중 하나의 이름을 복사해 슈퍼클래스에 넣는다. 이때 코틀린은 정적 언어이므로 슈퍼 클래스는 open 키워드를 갖고 있고, open function이 아니면 컴파일 시 에러가 난다. 따라서 한번에 서브 클래스의 메서드를 바꿔주어야 한다.
+
+```kotlin
+open class Party {
+  val monthlyCost = 10
+  fun annualCost(): Int = monthlyCost * 12 // <-- 슈퍼클래스로 open 키워드 없이 올리면 서브클래스에선 override 불가
+}
+class Employee : Party() {
+  val monthlyCost = 10
+  fun annualCost() : Int = monthlyCost * 12 // 따라서 에러 발생
+}
+
+class Department : Party() {
+  override val monthlyCost = 20
+  fun annualCost() : Int = monthlyCost * 12 // <-- 함수 이름 맞추기
+}
+```
