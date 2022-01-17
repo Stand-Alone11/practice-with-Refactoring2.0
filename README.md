@@ -852,7 +852,7 @@ fun setTitle(arg: String) {
 
 ```kotlin
 class Order(quantity: Int, item: Item) {
-	fun getPrice(): Double {
+  fun getPrice(): Double {
     var basePrice = quantity * item.price // 임시 변수
     var discountFactor = 0.98D // 임시 변수
     
@@ -864,7 +864,7 @@ class Order(quantity: Int, item: Item) {
 
 ```kotlin
 class Order(quantity: Int, item: Item) {
-	fun getPrice(): Double {
+  fun getPrice(): Double {
     val basePrice = quantity * item.price // 읽기 전용으로 바꾼 뒤 테스트, 만약 이 변수를 바꾸려고 하면 컴파일 에러
     var discountFactor = 0.98D
     
@@ -876,7 +876,7 @@ class Order(quantity: Int, item: Item) {
 
 ```kotlin
 class Order(quantity: Int, item: Item) {
-	fun getPrice(): Double {
+  fun getPrice(): Double {
     val basePrice = getBasePrice() // <-- 추출한 함수 대입
     var discountFactor = 0.98D
     
@@ -892,7 +892,7 @@ class Order(quantity: Int, item: Item) {
 
 ``` kotlin
 class Order(quantity: Int, item: Item) {
-	fun getPrice(): Double {
+  fun getPrice(): Double {
     //val basePrice = getBasePrice()     basePrice를 사용하는 부분에 getBasePrice()로 대체
     
     //if(getBasePrice() > 1000) discountFactor -= 0.03
