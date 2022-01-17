@@ -826,6 +826,91 @@ fun setTitle(arg: String) {
 }
 ```
 
+## chap 7. 캡슐화
+
+### 7.4
+
+임시 변수를 질의 함수로 바꾸기
+
+**배경**
+
+어떤 함수를 통해 얻은 결괏값을 다시 참조하기 위해 임시 변수로 사용하는 경우가 많다. 임시 변수를 사용하면 코드가 반복되는 것을 줄일 수 있고, 변수 이름으로 코드 이해가 쉬워지기도 한다. 그러나 임시 변수보다는 함수로 만들어 사용하는 것이 나을 때가 많다.
+
+**절차**
+
+1. 변수가 사용되기 전에 값이 확실히 결정되는지, 변수를 사용할 때마다 매번 다른 결과를 내지 않는지 확인한다.
+2. 읽기 전용으로 만들 수 있는 변수는 읽기 전용으로 만든다.
+3. 테스트
+4. 변수 대입문을 함수로 추출한다.
+   - 변수와 함수가 같은 이름을 가질 수 없으면 일단 임시 이름을 짓는다.
+   - 추출한 함수가 다른 부수 효과를 일으키는지 확인한다.
+   - 부수효과가 있다면 [질의 함수와 변경 함수 분리하기](#111)로 대처한다.
+5. 테스트
+6. [변수 인라인하기](#64)로 임시 변수를 제거한다.
+
+**예시**
+
+```kotlin
+class Order(quantity: Int, item: Item) {
+	fun getPrice(): Double {
+    var basePrice = quantity * item.price // 임시 변수
+    var discountFactor = 0.98D // 임시 변수
+    
+    if(basePrice > 1000) discountFactor -= 0.03
+    return basePrice * discountFactor
+  }
+}
+```
+
+```kotlin
+class Order(quantity: Int, item: Item) {
+	fun getPrice(): Double {
+    val basePrice = quantity * item.price // 읽기 전용으로 바꾼 뒤 테스트, 만약 이 변수를 바꾸려고 하면 컴파일 에러
+    var discountFactor = 0.98D
+    
+    if(basePrice > 1000) discountFactor -= 0.03
+    return basePrice * discountFactor
+  }
+}
+```
+
+```kotlin
+class Order(quantity: Int, item: Item) {
+	fun getPrice(): Double {
+    val basePrice = getBasePrice() // <-- 추출한 함수 대입
+    var discountFactor = 0.98D
+    
+    if(basePrice > 1000) discountFactor -= 0.03
+    return basePrice * discountFactor
+  }
+  
+  fun getBasePrice(): Int { // 함수로 추출
+    return quantity * item.price
+  }
+}
+```
+
+``` kotlin
+class Order(quantity: Int, item: Item) {
+	fun getPrice(): Double {
+    //val basePrice = getBasePrice()     basePrice를 사용하는 부분에 getBasePrice()로 대체
+    
+    //if(getBasePrice() > 1000) discountFactor -= 0.03
+    return getBasePrice() * getDiscountFactor() // discountFactor를 함수로 대체
+  }
+  
+  fun getBasePrice(): Int {
+    return quantity * item.price
+  }
+  
+  fun getDiscountFactor() { // 함수로 추출
+    var discountFactor = 0.98D
+    if(getBasePrice() > 1000) discountFactor -= 0.03
+    return getBasePrice() * discountFactor
+  }
+}
+```
+
 ## chap 8. 기능 이동
 
 ### 8.6
